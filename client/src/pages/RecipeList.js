@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Box, Button } from "../styles";
 
-function RecipeList() {
+function RecipeList({user}) {
   const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
@@ -12,6 +12,20 @@ function RecipeList() {
       .then((r) => r.json())
       .then(setRecipes);
   }, []);
+
+
+  function deleteRecipe(recipe) {
+    fetch(`/api/recipes/${recipe.id}`, 
+    {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then((r) => { 
+        if (r.ok) {
+        console.log('Item was deleted!')
+    }})
+  }
 
   return (
     <Wrapper>
@@ -27,6 +41,7 @@ function RecipeList() {
               </p>
               <ReactMarkdown>{recipe.instructions}</ReactMarkdown>
             </Box>
+            {recipe.user.id === user.id ? (<button onClick={() => deleteRecipe(recipe)} >Delete Recipe</button>) : <br/>}
           </Recipe>
         ))
       ) : (
