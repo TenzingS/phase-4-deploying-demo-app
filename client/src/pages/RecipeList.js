@@ -3,9 +3,11 @@ import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { Box, Button } from "../styles";
+import SingleRecipe from "./SingleRecipe";
 
 function RecipeList({user}) {
   const [recipes, setRecipes] = useState([]);
+  const [edit, setEdit] = useState(null)
 
   useEffect(() => {
     fetch("/api/recipes")
@@ -23,16 +25,31 @@ function RecipeList({user}) {
       }
     }).then((r) => { 
         if (r.ok) {
-        console.log('Item was deleted!')
+          window.location.reload(false);
+          console.log('Item was deleted!')
     }})
   }
+
+  const renderButtons = (recipe) => {
+    if (recipe.user.id === user.id){
+        return <div>
+                <button onClick={() => setEdit(recipe.id)} >Edit Recipe</button>
+                <button onClick={() => deleteRecipe(recipe)} >Delete Recipe</button>
+              </div>
+       }
+    }
 
   return (
     <Wrapper>
       {recipes.length > 0 ? (
         recipes.map((recipe) => (
           <Recipe key={recipe.id}>
-            <Box>
+            {edit === recipe.id ? (
+              <Box>
+              <SingleRecipe recipe={recipe} user={user} setEdit={setEdit} />
+              </Box>
+            ) : (
+            <Box >
               <h2>{recipe.title}</h2>
               <p>
                 <em>Time to Complete: {recipe.minutes_to_complete} minutes</em>
@@ -40,8 +57,9 @@ function RecipeList({user}) {
                 <cite>By {recipe.user.username}</cite>
               </p>
               <ReactMarkdown>{recipe.instructions}</ReactMarkdown>
-            </Box>
-            {recipe.user.id === user.id ? (<button onClick={() => deleteRecipe(recipe)} >Delete Recipe</button>) : <br/>}
+            </Box> 
+            )}
+            {edit === recipe.id ? '' : renderButtons(recipe)}
           </Recipe>
         ))
       ) : (
